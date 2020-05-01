@@ -12,7 +12,6 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -36,10 +35,13 @@ public class App extends Application {
 	Stage window;
 	//Scene menuScene, startScene, prjListScene, uploadStudentsScene;
 	Scene borderScene;
+	
+	// variables to store relevant project & student data for assignment algorithm & results 
 	int pCount;
-	List<String> projects = new ArrayList<String>();
-	List<String> students = new ArrayList<String>();
 	String[][] importData = null;
+	List<Project> projects = new ArrayList<Project>();
+	List<Student> students = new ArrayList<Student>();
+	int[] matchResult;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -141,27 +143,11 @@ public class App extends Application {
 		//Uploading Students & Preferences (Scene 3)
 		Label uploadStudentsTitle = new Label("Please Upload All Student Names and Their Preferences Here:");
 		Button uploadStudents = new Button("Upload Student Info");
-		Label label = new Label();
-		uploadStudents.setOnAction(e -> {
-			FileChooser getPrjs = new FileChooser();
-			File prjListFile = getPrjs.showOpenDialog(primaryStage); 			  
-            if (prjListFile != null) {
-                readFile r = new readFile();
-        		try {
-        			r.openFile(prjListFile);
-        			importData = r.read();
-        			r.close();
-                    label.setText(prjListFile.getAbsolutePath() + "  successfully uploaded.\n" + importData.length + " Rows were read.");
-        		}
-        		catch (IOException | InvalidFormatException e1) {
-        			e1.printStackTrace();
-        		}
-            }
-            else {
-            	label.setText("No File Selected");
-            }
-            s3Layout.getChildren().add(label);
-		});
+		Label uploadStatus = new Label();
+		GridPane studentData = new GridPane();
+		studentData.setHgap(5);
+		studentData.setVgap(5);
+		studentData.addRow(0, new Label("Student Name"), new Label("Rank 1"), new Label("Rank 2"), new Label("Rank 3"), new Label("Rank 4"));
 		s3Layout.getChildren().addAll(uploadStudentsTitle, uploadStudents);
 		s3Layout.setAlignment(Pos.CENTER);
 		
@@ -191,11 +177,10 @@ public class App extends Application {
 		// Scene 2 button actions (add project, next, and back)
 		addProject.setOnAction(e -> {
 			if (projects.size() < pCount) {
-				String tempPrjName = prjName.getText();
-				int tempslots = Integer.parseInt(slotCount.getText());
-				projects.add(tempPrjName);
-				prjList.add(new Label(tempPrjName), 1, projects.indexOf(tempPrjName));
-				prjList.add(new Label(tempslots + " Slots"), 2, projects.indexOf(tempPrjName));
+				Project temp = new Project(prjName.getText(), Integer.parseInt(slotCount.getText()));
+				projects.add(temp);
+				prjList.add(new Label(temp.getProjectName()), 1, projects.indexOf(temp));
+				prjList.add(new Label(temp.getCapacity() + " Slots"), 2, projects.indexOf(temp));
 				prjName.clear();
 				slotCount.clear();
 			}
@@ -217,7 +202,42 @@ public class App extends Application {
 			outerLayout.setCenter(s3Layout);
 		});
 
-		// Scene 3 button actions (next and back)
+		// Scene 3 button actions (upload students, next, and back)
+		uploadStudents.setOnAction(e -> {
+			FileChooser getPrjs = new FileChooser();
+			File prjListFile = getPrjs.showOpenDialog(primaryStage); 			  
+            if (prjListFile != null) {
+                readFile r = new readFile();
+        		try {
+        			r.openFile(prjListFile);
+        			importData = r.read();
+        			r.close();
+            		uploadStatus.setText(prjListFile.getAbsolutePath() + "  successfully uploaded.\n" + importData.length + " Rows were read.");
+        		}
+        		catch (IOException | InvalidFormatException e1) {
+        			e1.printStackTrace();
+        		}
+            }
+            else {
+            	uploadStatus.setText("No File Selected");
+            }
+
+            for (int i = 0; i < importData.length; i++) {
+            	List<String> rankList = new ArrayList<String>(4);
+            	for (int j = 1; j< 5; j++) {
+            			rankList.add(importData[i][j]);
+            	}
+            	Student tempStudent = new Student(importData[i][0], rankList); students.add(tempStudent);
+            }
+            for (Student student : students) {
+            	int currGPRow = studentData.getRowCount();
+            	List<String> tempRanks = student.getRanks(); studentData.addRow(currGPRow,
+            		new Label(student.getStudentName()), new Label(tempRanks.get(0)), new
+            		Label(tempRanks.get(1)), new Label(tempRanks.get(2)), new
+            		Label(tempRanks.get(3)));
+            }
+            s3Layout.getChildren().addAll(uploadStatus, studentData);
+		});
 		s3Back.setOnAction(e -> {
 			RightMenu.getChildren().removeAll(s3Next);
 			RightMenu.getChildren().add(s2Next);
@@ -233,7 +253,7 @@ public class App extends Application {
 			outerLayout.setCenter(s4Layout);
 		});
 		
-		// Scene 4 button actions (back only)
+		// Scene 4 button actions (export assignments, and back)
 		s4Back.setOnAction(e -> {
 			RightMenu.getChildren().removeAll(padder);
 			RightMenu.getChildren().add(s3Next);
@@ -251,13 +271,14 @@ public class App extends Application {
 				LeftMenu.getChildren().clear();
 				LeftMenu.getChildren().add(padder);
 				prjCount.clear();
-				label.setText("");
+				uploadStatus.setText("");
 				prjName.clear();
 				slotCount.clear();
 				prjList.getChildren().clear();
 				pCount = 0;
 				projects.clear();
 				students.clear();
+				importData = null;
 				outerLayout.setCenter(s1Layout);
 			}
 		});

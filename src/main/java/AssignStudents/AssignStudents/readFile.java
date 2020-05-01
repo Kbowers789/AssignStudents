@@ -38,7 +38,9 @@ public class readFile {
 			Iterator<Cell> cellIterator = row.cellIterator();
 
 			String[] tempData = new String[row.getLastCellNum()];
-			
+			//if (tempData[0].contains("Student")) {
+				//continue;
+			//}
 			while (cellIterator.hasNext()) {
 				Cell cell = cellIterator.next();
 				//will skip the columns (if any) after the initial 5 (Student Name + 4 Ranks)
