@@ -25,7 +25,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -145,24 +144,10 @@ public class App extends Application {
 		//Uploading Students & Preferences (Scene 3)
 		Label uploadStudentsTitle = new Label("Please Upload All Student Names and Their Preferences Here:");
 		Button uploadStudents = new Button("Upload Student Info");
-		/*Text gridCol0 = new Text("Student Name");
-		gridCol0.setUnderline(true);
-		Text gridCol1 = new Text("Rank 1");
-		gridCol1.setUnderline(true);
-		Text gridCol2 = new Text("Rank 2");
-		gridCol2.setUnderline(true);
-		Text gridCol3 = new Text("Rank 3");
-		gridCol3.setUnderline(true);
-		Text gridCol4 = new Text("Rank 4");
-		gridCol4.setUnderline(true);*/
 		ScrollPane gridScroll = new ScrollPane();
-		/*GridPane dataHeaders = new GridPane();
-		dataHeaders.setHgap(5);
-		dataHeaders.setVgap(5);*/
 		GridPane studentData = new GridPane();
 		studentData.setHgap(5);
 		studentData.setVgap(5);
-		// dataHeaders.addRow(0, gridCol0, gridCol1, gridCol2, gridCol3, gridCol4);
 		gridScroll.setContent(studentData);
 		Label uploadStatus = new Label();
 		s3Layout.getChildren().addAll(uploadStudentsTitle, uploadStudents, uploadStatus, gridScroll);
@@ -221,6 +206,9 @@ public class App extends Application {
 
 		// Scene 3 button actions (upload students, next, and back)
 		uploadStudents.setOnAction(e -> {
+			if (students.size() > 0) {
+				students.clear();
+			}
 			FileChooser getPrjs = new FileChooser();
 			File prjListFile = getPrjs.showOpenDialog(primaryStage); 			  
             if (prjListFile != null) {
@@ -244,14 +232,13 @@ public class App extends Application {
             	for (int j = 1; j< 5; j++) {
             			rankList.add(importData[i][j]);
             	}
-            	Student tempStudent = new Student(importData[i][0], rankList); students.add(tempStudent);
+            	Student tempStudent = new Student(importData[i][0], rankList);
+            	students.add(tempStudent);
             }
             for (Student student : students) {
-            	int currGPRow = studentData.getRowCount();
             	List<String> tempRanks = student.getRanks();
-            	studentData.addRow(currGPRow, new Label(student.getStudentName()), new Label(tempRanks.get(0)), new Label(tempRanks.get(1)), new Label(tempRanks.get(2)), new Label(tempRanks.get(3)));
+            	studentData.addRow(students.indexOf(student), new Label(student.getStudentName()), new Label(tempRanks.get(0)), new Label(tempRanks.get(1)), new Label(tempRanks.get(2)), new Label(tempRanks.get(3)));
             }
-            // s3Layout.getChildren().addAll(uploadStatus);
 		});
 		s3Back.setOnAction(e -> {
 			RightMenu.getChildren().removeAll(s3Next);
@@ -296,7 +283,6 @@ public class App extends Application {
 				projects.clear();
 				students.clear();
 				importData = null;
-				studentData.getChildren().clear();				
 				outerLayout.setCenter(s1Layout);
 			}
 		});

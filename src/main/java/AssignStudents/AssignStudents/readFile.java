@@ -38,12 +38,9 @@ public class readFile {
 			Iterator<Cell> cellIterator = row.cellIterator();
 
 			String[] tempData = new String[row.getLastCellNum()];
-			//if (tempData[0].contains("Student")) {
-				//continue;
-			//}
 			while (cellIterator.hasNext()) {
 				Cell cell = cellIterator.next();
-				//will skip the columns (if any) after the initial 5 (Student Name + 4 Ranks)
+				//will skip the columns (if any) after the initial 5 (Student Name + 4 Ranks)	
 				if (cell.getColumnIndex() < 5) {			
 					// all cells should be strings, but just in case, willl cast any other types to a string before adding to temoData
 					switch(cell.getCellType()) {
@@ -59,6 +56,9 @@ public class readFile {
 					default :
 					}
 				}
+			}
+			if (row.getRowNum() == 0 && tempData[0].startsWith("Student")) {
+				continue;
 			}
 			// adding our row data to our full data matrix
 			data[row.getRowNum()] = tempData;
