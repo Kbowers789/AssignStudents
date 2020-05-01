@@ -30,8 +30,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 
-
-
 public class App extends Application {
 	Stage window;
 	//Scene menuScene, startScene, prjListScene, uploadStudentsScene;
@@ -42,6 +40,7 @@ public class App extends Application {
 	String[][] importData = null;
 	List<Project> projects = new ArrayList<Project>();
 	List<Student> students = new ArrayList<Student>();
+	MatchStudents match;
 	int[] matchResult;
 	
 	public static void main(String[] args) {
@@ -155,8 +154,11 @@ public class App extends Application {
 		
 		
 		// Viewing Results (Scene 4)
-		Label results  = new Label("Results:");
-		s4Layout.getChildren().addAll(results);
+		Label resultsLabel  = new Label("Results:");
+		GridPane showResults = new GridPane();
+		showResults.setVgap(15);
+		showResults.setHgap(15);
+		s4Layout.getChildren().addAll(resultsLabel, showResults);
 		s4Layout.setAlignment(Pos.CENTER);
 		
 		
@@ -237,7 +239,8 @@ public class App extends Application {
             }
             for (Student student : students) {
             	List<String> tempRanks = student.getRanks();
-            	studentData.addRow(students.indexOf(student), new Label(student.getStudentName()), new Label(tempRanks.get(0)), new Label(tempRanks.get(1)), new Label(tempRanks.get(2)), new Label(tempRanks.get(3)));
+            	studentData.addRow(students.indexOf(student), new Label(student.getStudentName()), new Label(tempRanks.get(0)),
+            			new Label(tempRanks.get(1)), new Label(tempRanks.get(2)), new Label(tempRanks.get(3)));
             }
 		});
 		s3Back.setOnAction(e -> {
@@ -252,8 +255,45 @@ public class App extends Application {
 			RightMenu.getChildren().add(padder);
 			LeftMenu.getChildren().removeAll(s3Back);
 			LeftMenu.getChildren().add(s4Back);
-			
-			
+			int totSlots = 0;
+			for (int p = 0; p < projects.size(); p++) {
+				totSlots += projects.get(p).getCapacity();
+			}
+			int[][] adjMatrix = new int[students.size()][totSlots];
+			for (Student student: students) {
+				int currProject = 0;
+				for (int k = 0; k < totSlots; k++) {
+					for (int j = 0; j < projects.get(currProject).getCapacity(); j++) {
+						int sRank = student.findRank(projects.get(currProject).getProjectName());
+						adjMatrix[students.indexOf(student)][k] = sRank;
+						if (j < projects.get(currProject).getCapacity()-1) {
+							k++;
+						}
+					}
+					currProject++;
+				}
+			}
+			match = new MatchStudents(adjMatrix);
+			matchResult = match.assign();
+			int a = 0;
+			for (int i = 0; i < projects.size(); i++) {
+				int c = projects.get(i).getCapacity();
+				while (c > 0) {
+					if (matchResult[a] < students.size()) {
+						projects.get(i).assignStudent(students.get(matchResult[a]));					
+					}
+					a++;
+					c--;
+				}
+			}
+			for(int i = 0; i < projects.size(); i++) {
+				showResults.add(new Label(projects.get(i).getProjectName()), i, 0);
+				List<Student> assignedStudents = projects.get(i).getAssigned();
+				for (int s = 0; s < assignedStudents.size(); s++) {
+					showResults.add(new Label(assignedStudents.get(s).getStudentName() + "(rank " +
+								assignedStudents.get(s).findRank(projects.get(i).getProjectName()) + ")"), i, s+1);
+				}			
+			}
 			outerLayout.setCenter(s4Layout);
 		});
 		
@@ -268,7 +308,8 @@ public class App extends Application {
 		
 		// restart button action - has to clear most text areas and other memory variables
 		restartButton.setOnAction(e -> {
-			boolean result = ConfirmBox.display("Confirm", "Are you sure you want to restart? Any data already entered will be deleted.");
+			boolean result = ConfirmBox.display("Confirm", "Are you sure you want to restart?"
+					+ "Any data already entered will be deleted.");
 			if (result) {
 				RightMenu.getChildren().clear();
 				RightMenu.getChildren().add(s1Next);
