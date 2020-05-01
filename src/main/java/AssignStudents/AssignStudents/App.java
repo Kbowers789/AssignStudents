@@ -5,12 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Application;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -30,6 +33,7 @@ public class App extends Application {
 	Scene borderScene;
 	int pCount;
 	List<String> projects = new ArrayList<String>();
+	List<String> students = new ArrayList<String>();
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -93,24 +97,15 @@ public class App extends Application {
 		closeButton.setOnAction(e -> closeProgram());
 		Button restartButton = new Button("Restart");
 		restartButton.prefWidth(100);
-		restartButton.setOnAction(e -> {
-			boolean result = ConfirmBox.display("Confirm", "Are you sure you want to restart? Any data already entered will be deleted.");
-			if (result) {
-				RightMenu.getChildren().removeAll();
-				RightMenu.getChildren().add(s1Next);
-				LeftMenu.getChildren().removeAll();
-				outerLayout.setCenter(s1Layout);
-			}
-		});
 		VBox menuButtons = new VBox(5);
 		menuButtons.getChildren().addAll(restartButton, closeButton);
 		topMenu.getChildren().addAll(mainTitle, menuButtons);
 		
-		//Start (Scene 1)
+		//Start Page (Scene 1)
 		Label getPrjCount = new Label("Welcome!\nTo begin, please upload the list of project names:");
 		getPrjCount.setAlignment(Pos.TOP_CENTER);
 		getPrjCount.setTextAlignment(TextAlignment.CENTER);
-		TextArea prjCount = new TextArea();
+		TextField prjCount = new TextField();
 		prjCount.setMaxWidth(15);
 		prjCount.setMaxHeight(15);
 		s1Layout.getChildren().addAll(getPrjCount, prjCount);
@@ -120,11 +115,11 @@ public class App extends Application {
 		//Adding Project Details (Scene 2)
 		Label prjListTitle = new Label("Please Add Project Name and Number of Available Slots For Each Project:");
 		Label prjNameLbl = new Label("Project Name:");
-		TextArea prjName = new TextArea();
+		TextField prjName = new TextField();
 		prjCount.setMaxWidth(50);
 		prjCount.setMaxHeight(15);
 		Label slotCountLbl = new Label("Available Slots:");
-		TextArea slotCount = new TextArea();
+		TextField slotCount = new TextField();
 		slotCount.setMaxWidth(50);
 		slotCount.setMaxHeight(15);
 		Button addProject = new Button("Add Project");
@@ -230,6 +225,25 @@ public class App extends Application {
 			LeftMenu.getChildren().removeAll(s4Back);
 			LeftMenu.getChildren().add(s3Back);
 			outerLayout.setCenter(s3Layout);
+		});
+		
+		// restart button action - has to clear most text areas and other memory variables
+		restartButton.setOnAction(e -> {
+			boolean result = ConfirmBox.display("Confirm", "Are you sure you want to restart? Any data already entered will be deleted.");
+			if (result) {
+				RightMenu.getChildren().clear();
+				RightMenu.getChildren().add(s1Next);
+				LeftMenu.getChildren().clear();
+				LeftMenu.getChildren().add(padder);
+				prjCount.clear();
+				label.setText("");
+				prjName.clear();
+				slotCount.clear();
+				prjList.getChildren().clear();
+				projects.clear();
+				students.clear();
+				outerLayout.setCenter(s1Layout);
+			}
 		});
 
 		
