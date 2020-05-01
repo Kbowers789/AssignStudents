@@ -1,18 +1,21 @@
 package AssignStudents.AssignStudents;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+
+//import com.sun.org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+
 import javafx.application.Application;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -27,6 +30,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 
+
+
 public class App extends Application {
 	Stage window;
 	//Scene menuScene, startScene, prjListScene, uploadStudentsScene;
@@ -34,6 +39,7 @@ public class App extends Application {
 	int pCount;
 	List<String> projects = new ArrayList<String>();
 	List<String> students = new ArrayList<String>();
+	String[][] importData = null;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -140,7 +146,16 @@ public class App extends Application {
 			FileChooser getPrjs = new FileChooser();
 			File prjListFile = getPrjs.showOpenDialog(primaryStage); 			  
             if (prjListFile != null) {
-                label.setText(prjListFile.getAbsolutePath() + "  selected"); 
+                readFile r = new readFile();
+        		try {
+        			r.openFile(prjListFile);
+        			importData = r.read();
+        			r.close();
+                    label.setText(prjListFile.getAbsolutePath() + "  successfully uploaded.\n" + importData.length + " Rows were read.");
+        		}
+        		catch (IOException | InvalidFormatException e1) {
+        			e1.printStackTrace();
+        		}
             }
             else {
             	label.setText("No File Selected");
@@ -240,6 +255,7 @@ public class App extends Application {
 				prjName.clear();
 				slotCount.clear();
 				prjList.getChildren().clear();
+				pCount = 0;
 				projects.clear();
 				students.clear();
 				outerLayout.setCenter(s1Layout);
