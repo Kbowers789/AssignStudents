@@ -110,7 +110,7 @@ public class App extends Application {
 		topMenu.getChildren().addAll(mainTitle, menuButtons);
 		
 		//Start Page (Scene 1)
-		Label getPrjCount = new Label("Welcome!\nTo begin, please upload the list of project names:");
+		Label getPrjCount = new Label("Welcome!\nTo begin, please enter the total number of projects:");
 		getPrjCount.setAlignment(Pos.TOP_CENTER);
 		getPrjCount.setTextAlignment(TextAlignment.CENTER);
 		TextField prjCount = new TextField();
